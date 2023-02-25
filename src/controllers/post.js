@@ -25,8 +25,8 @@ exports.create = async (req, res) => {
     const post = new Post({ ...req.fields, slug: slugify(name) });
 
     if (photo) {
-      product.photo.data = fs.readFileSync(photo.path);
-      product.photo.contentType = photo.type;
+      post.photo.data = fs.readFileSync(photo.path);
+      post.photo.contentType = photo.type;
     }
 
     await post.save();
