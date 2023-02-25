@@ -6,15 +6,18 @@ require("dotenv").config();
 exports.register = async (req, res) => {
   try {
     // 1. Destructure name, email, password from req.body
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     // 2. All fields require validation
-    if (!name.trim()) {
-      return res.json({ error: "Name is required" });
+    if (!firstName.trim()) {
+      return res.json({ error: "First name is required" });
     }
-    if (!email.trim()) {
-      return res.json({ error: "Email is required" });
+    if (!lastName.trim()) {
+      return res.json({ error: "Last name is required" });
     }
+    // if (!email.trim()) {
+    //   return res.json({ error: "Email is required" });
+    // }
     if (!password.trim()) {
       return res.json({ error: "Password is required" });
     }
@@ -30,7 +33,8 @@ exports.register = async (req, res) => {
 
     // 5. Register user / Save user details
     const user = await new User({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
     }).save();
@@ -41,17 +45,17 @@ exports.register = async (req, res) => {
     });
 
     // 7. Send response
-    res.json({
+    res.status(200).json({
       user: {
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        address: user.address,
       },
       token,
     });
   } catch (err) {
-    console.log(err);
+    res.status(400).json({ status: "fail", data: err.message });
   }
 };
 
@@ -86,48 +90,16 @@ exports.login = async (req, res) => {
     });
 
     // 6. Send response
-    res.json({
+    res.status(200).json({
       user: {
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        address: user.address,
       },
       token,
     });
   } catch (err) {
-    console.log(err);
-  }
-};
-
-exports.updateProfile = async (req, res) => {
-  try {
-    const { name, password, address } = req.body;
-    const user = await User.findById(req.user._id);
-
-    // Check password length
-    if (password && password.length < 6) {
-      return res.json({
-        error: "Password is required and should be min 6 characters long",
-      });
-    }
-
-    // Hash password
-    const hashedPassword = password ? await hashedPassword(password) : undefined;
-
-    const updated = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        name: name || user.name,
-        password: hashPassword || user.password,
-        address: address || user.address,
-      },
-      { new: true }
-    );
-
-    updated.password = undefined;
-    res.json(updated);
-  } catch (err) {
-    console.log(err);
+    res.status(400).json({ status: "fail", data: err.message });
   }
 };
